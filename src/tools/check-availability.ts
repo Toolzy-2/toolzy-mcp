@@ -18,8 +18,25 @@ function countDays(start: string, end: string): number {
   return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 }
 
+// Format de date strict (YYYY-MM-DD). Valider AVANT toute interpolation dans un
+// filtre PostgREST empêche toute injection de filtre via les dates.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export async function checkAvailability(params: CheckAvailabilityParams) {
   const supabase = getSupabase();
+
+  if (!DATE_RE.test(params.start_date) || !DATE_RE.test(params.end_date)) {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: "Dates invalides. Format attendu : YYYY-MM-DD.",
+        },
+      ],
+      isError: true,
+    };
+  }
+
   const slug = extractSlug(params.tool_url);
 
   // Récupérer l'outil et son prix

@@ -50,7 +50,7 @@ export async function searchTools(params: SearchParams) {
 
   if (error) {
     return {
-      content: [{ type: "text" as const, text: `Erreur: ${error.message}` }],
+      content: [{ type: "text" as const, text: "Une erreur est survenue lors de la recherche." }],
       isError: true,
     };
   }
