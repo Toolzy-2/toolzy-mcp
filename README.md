@@ -6,7 +6,7 @@ Il permet aux assistants IA (ChatGPT, Claude, Cursor, agents MCP…) de **recher
 
 > _Official MCP server for Toolzy, France's peer-to-peer tool rental marketplace. Lets AI assistants search tools, read listings and check availability._
 
-- **Endpoint distant** : `https://mcp.toolzy.io/mcp` (Streamable HTTP, stateless)
+- **Endpoint distant** : `https://mcp.toolzy.io/api/mcp` (Streamable HTTP, stateless)
 - **Auth** : aucune — lecture seule des annonces publiques
 - **Données** : annonces modérées (`validated`) de toolzy.io
 
@@ -25,7 +25,7 @@ Il permet aux assistants IA (ChatGPT, Claude, Cursor, agents MCP…) de **recher
 Ajoutez le serveur distant à votre client MCP :
 
 ```
-https://mcp.toolzy.io/mcp
+https://mcp.toolzy.io/api/mcp
 ```
 
 ### Claude Desktop (via le proxy stdio `mcp-remote`)
@@ -35,7 +35,7 @@ https://mcp.toolzy.io/mcp
   "mcpServers": {
     "toolzy": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.toolzy.io/mcp"]
+      "args": ["-y", "mcp-remote", "https://mcp.toolzy.io/api/mcp"]
     }
   }
 }
@@ -93,7 +93,7 @@ npx @modelcontextprotocol/inspector
 1. Importer le repo dans Vercel.
 2. Définir `SUPABASE_URL` et `SUPABASE_ANON_KEY` (Environment Variables).
 3. Brancher le domaine `mcp.toolzy.io`.
-4. L'endpoint est alors disponible sur `https://mcp.toolzy.io/mcp` (rewrite → `/api/mcp`).
+4. L'endpoint est alors disponible sur `https://mcp.toolzy.io/api/mcp`.
 
 ## Publication dans les registres MCP
 
@@ -104,7 +104,7 @@ npx @modelcontextprotocol/inspector
   mcp-publisher login dns --domain toolzy.io
   mcp-publisher publish
   ```
-- **Smithery** : `smithery mcp publish https://mcp.toolzy.io/mcp -n toolzy/toolzy`
+- **Smithery** : `smithery mcp publish https://mcp.toolzy.io/api/mcp -n toolzy/toolzy`
 - **Glama / PulseMCP** : crawl automatique du repo public → « claim » de la fiche.
 - **MCP.so** : soumission via https://mcp.so/submit (repo GitHub public).
 - **awesome-mcp-servers** : PR ajoutant l'entrée dans la bonne catégorie.

@@ -1,4 +1,4 @@
-const ENDPOINT = "https://mcp.toolzy.io/mcp";
+const ENDPOINT = "https://mcp.toolzy.io/api/mcp";
 
 const TOOLS = [
   {
