@@ -1,0 +1,16 @@
+{
+  "name": "get_tool_details",
+  "description": "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos, propriétaire. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche.",
+  "arguments": {
+    "type": "object",
+    "properties": {
+      "tool_url": {
+        "type": "string",
+        "description": "URL de l'annonce Toolzy (ex: https://www.toolzy.io/listings/perceuse-makita)"
+      }
+    },
+    "required": [
+      "tool_url"
+    ]
+  }
+}

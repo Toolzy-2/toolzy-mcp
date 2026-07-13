@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.toolzy/toolzy",
+  "description": "Recherche et location d'outils entre particuliers en France via Toolzy.",
+  "version": "0.1.0",
+  "websiteUrl": "https://www.toolzy.io",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.toolzy.io/mcp"
+    }
+  ]
+}

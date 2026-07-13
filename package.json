@@ -1,0 +1,44 @@
+{
+  "name": "toolzy-mcp",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "description": "Serveur MCP officiel de Toolzy — recherche et location d'outils entre particuliers en France (remote MCP server for the Toolzy peer-to-peer tool rental marketplace).",
+  "homepage": "https://mcp.toolzy.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toolzy/toolzy-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "toolzy",
+    "tool-rental",
+    "marketplace",
+    "france",
+    "location-outils"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3005",
+    "build": "next build",
+    "start": "next start -p 3005",
+    "stdio": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "mcp-handler": "^1.0.2",
+    "next": "^15.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

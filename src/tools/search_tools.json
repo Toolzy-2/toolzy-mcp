@@ -1,0 +1,41 @@
+{
+  "name": "search_tools",
+  "description": "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage').",
+  "arguments": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Recherche textuelle (nom d'outil, marque, type)"
+      },
+      "city": {
+        "type": "string",
+        "description": "Ville pour filtrer les résultats"
+      },
+      "zipcode": {
+        "type": "string",
+        "description": "Code postal (filtre par préfixe)"
+      },
+      "category": {
+        "type": "string",
+        "description": "Catégorie d'outils"
+      },
+      "price_max": {
+        "type": "number",
+        "description": "Prix maximum par jour en euros"
+      },
+      "delivery": {
+        "type": "boolean",
+        "description": "Filtrer sur livraison disponible"
+      },
+      "coaching": {
+        "type": "boolean",
+        "description": "Filtrer sur accompagnement disponible"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Nombre max de résultats (défaut: 10, max: 20)"
+      }
+    }
+  }
+}
