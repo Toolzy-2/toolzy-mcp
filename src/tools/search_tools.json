@@ -1,6 +1,6 @@
 {
   "name": "search_tools",
-  "description": "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage').",
+  "description": "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage'). La recherche couvre la commune demandée PUIS les communes voisines dans un rayon de 15 km : chaque résultat porte `is_local` et `distance_km`, et `search_area` donne la répartition. Indiquez toujours à l'utilisateur ce qui est dans sa ville et ce qui est à côté, avec la distance.",
   "arguments": {
     "type": "object",
     "properties": {
@@ -10,7 +10,7 @@
       },
       "city": {
         "type": "string",
-        "description": "Ville pour filtrer les résultats"
+        "description": "Ville de recherche. Les communes voisines sont incluses automatiquement."
       },
       "zipcode": {
         "type": "string",
@@ -31,6 +31,15 @@
       "coaching": {
         "type": "boolean",
         "description": "Filtrer sur accompagnement disponible"
+      },
+      "radius_km": {
+        "type": "number",
+        "description": "Rayon autour de la ville en km (défaut: 15, max: 100). N'élargissez que si l'utilisateur accepte de se déplacer plus loin."
+      },
+      "country": {
+        "type": "string",
+        "enum": ["france", "belgique"],
+        "description": "Marché à interroger, pour lever une ambiguïté de commune homonyme (ex: Bruges)."
       },
       "limit": {
         "type": "integer",

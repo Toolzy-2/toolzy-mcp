@@ -1,6 +1,6 @@
 {
   "name": "get_tool_details",
-  "description": "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos, propriétaire. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche.",
+  "description": "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos, propriétaire. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche. Renvoie aussi `similar_tools` : des alternatives de la même catégorie dans un rayon de 20 km avec leur distance — à proposer si l'outil est jugé trop cher ou trop loin.",
   "arguments": {
     "type": "object",
     "properties": {

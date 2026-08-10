@@ -59,14 +59,12 @@ export async function checkAvailability(params: CheckAvailabilityParams) {
 
   // Vérifier les réservations existantes sur la période
   //
-  // ⚠️ SÉCURITÉ/EXACTITUDE (à valider avant prod) : cette lecture utilise la
-  // clé ANON et dépend donc des RLS de la table `reservations`.
-  //  - Si les RLS bloquent le SELECT anonyme → `reservations` = null → l'outil
-  //    est TOUJOURS annoncé disponible (faux positif).
-  //  - Si les RLS autorisent le SELECT anonyme → on expose les fenêtres de
-  //    réservation (fuite de données).
-  // Correctif recommandé : passer par une RPC `SECURITY DEFINER` qui ne renvoie
-  // qu'un booléen de disponibilité (cf. `mcp_check_availability` du PRD Phase 0).
+  // Cette lecture utilise la clé ANON et dépend donc des RLS de `reservations`.
+  // Vérifié en base le 2026-08-10 : la policy « Anyone can check reservation
+  // status for availability » (rôle `public`) autorise ce SELECT — la
+  // disponibilité renvoyée est donc exacte, il n'y a pas de faux « disponible ».
+  // L'exposition des fenêtres de réservation est assumée par cette policy, qui
+  // existe précisément pour l'affichage des calendriers publics du site.
   const { data: reservations } = await supabase
     .from("reservations")
     .select("start_date, end_date")

@@ -17,15 +17,32 @@ export function registerToolzyTools(server: McpServer): void {
     {
       title: "Rechercher des outils",
       description:
-        "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage').",
+        "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage'). " +
+        "La recherche couvre la commune demandée PUIS les communes voisines dans un rayon de 15 km : chaque résultat porte `is_local` et `distance_km`, et `search_area` donne la répartition. " +
+        "Indiquez toujours à l'utilisateur ce qui est dans sa ville et ce qui est à côté, avec la distance.",
       inputSchema: {
         query: z.string().optional().describe("Recherche textuelle (nom d'outil, marque, type)"),
-        city: z.string().optional().describe("Ville pour filtrer les résultats"),
+        city: z
+          .string()
+          .optional()
+          .describe("Ville de recherche. Les communes voisines sont incluses automatiquement."),
         zipcode: z.string().optional().describe("Code postal (filtre par préfixe)"),
         category: z.string().optional().describe("Catégorie d'outils"),
         price_max: z.number().optional().describe("Prix maximum par jour en euros"),
         delivery: z.boolean().optional().describe("Filtrer sur livraison disponible"),
         coaching: z.boolean().optional().describe("Filtrer sur accompagnement disponible"),
+        radius_km: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe(
+            "Rayon autour de la ville en km (défaut: 15). N'élargissez que si l'utilisateur accepte de se déplacer plus loin.",
+          ),
+        country: z
+          .enum(["france", "belgique"])
+          .optional()
+          .describe("Marché à interroger, pour lever une ambiguïté de commune homonyme (ex: Bruges)."),
         limit: z
           .number()
           .int()
@@ -43,7 +60,8 @@ export function registerToolzyTools(server: McpServer): void {
     {
       title: "Détails d'un outil",
       description:
-        "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche.",
+        "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche. " +
+        "Renvoie aussi `similar_tools` : des alternatives de la même catégorie dans un rayon de 20 km avec leur distance — à proposer si l'outil est jugé trop cher ou trop loin.",
       inputSchema: {
         tool_url: z
           .string()
