@@ -1,9 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.toolzy/toolzy",
-  "description": "Recherche et location d'outils entre particuliers en France via Toolzy.",
-  "version": "0.1.0",
-  "websiteUrl": "https://www.toolzy.io",
+  "description": "Location d'outils en France : recherche ; avec votre compte, réservations, messages et annonces.",
+  "version": "0.2.0",
+  "websiteUrl": "https://mcp.toolzy.io",
+  "repository": {
+    "url": "https://github.com/Toolzy-2/toolzy-mcp",
+    "source": "github"
+  },
   "remotes": [
     {
       "type": "streamable-http",

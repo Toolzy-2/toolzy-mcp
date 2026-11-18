@@ -1,13 +1,13 @@
 {
   "name": "toolzy-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "license": "MIT",
   "description": "Serveur MCP officiel de Toolzy — recherche et location d'outils entre particuliers en France (remote MCP server for the Toolzy peer-to-peer tool rental marketplace).",
   "homepage": "https://mcp.toolzy.io",
   "repository": {
     "type": "git",
-    "url": "https://github.com/toolzy/toolzy-mcp.git"
+    "url": "https://github.com/Toolzy-2/toolzy-mcp.git"
   },
   "keywords": [
     "mcp",
