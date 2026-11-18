@@ -59,3 +59,17 @@ export function describeApp(clientId: string, clientName: string | undefined): s
   if (name) return name;
   return hostOf(clientId) ?? "Une application";
 }
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+
+/**
+ * Phrase indiquant où l'utilisateur sera renvoyé après son choix. Une adresse
+ * locale (application installée, comme Claude Code) est décrite en clair ; un
+ * domaine en ligne est affiché tel quel pour repérer une application qui se
+ * ferait passer pour une autre.
+ */
+export function describeRedirect(redirectHost: string, appName: string): string {
+  return LOOPBACK_HOSTS.has(redirectHost.toLowerCase())
+    ? `Vous serez ensuite renvoyé vers ${appName} sur cet ordinateur.`
+    : `Vous serez ensuite renvoyé vers ${redirectHost}.`;
+}
