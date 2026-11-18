@@ -1,4 +1,5 @@
 import { WRITE_TOOLS } from "./config";
+import type { RateLimitRule } from "./config";
 import { evaluateCounts, incrementCounters, rulesFor } from "./rateLimit";
 import { resolveDb, type DbSource } from "./types";
 
@@ -32,9 +33,10 @@ export async function checkRateLimit(
   userId: string,
   tool: string,
   now: Date = new Date(),
+  rules: readonly RateLimitRule[] = rulesFor(tool),
 ): Promise<GuardDecision> {
   try {
-    const counts = await incrementCounters(resolveDb(source), userId, rulesFor(tool), now);
+    const counts = await incrementCounters(resolveDb(source), userId, rules, now);
     const decision = evaluateCounts(counts, now);
     if (decision.allowed) return { kind: "allow" };
     return {

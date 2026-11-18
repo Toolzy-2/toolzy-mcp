@@ -5,6 +5,8 @@ import { registerAuthenticatedTools } from "@/lib/registerAuthenticated";
 import { getAuthEnv } from "@/lib/auth/env";
 import { decideAccess } from "@/lib/auth/protectedTools";
 import { createTokenVerifier, InvalidTokenError } from "@/lib/auth/verifyToken";
+import { getPool } from "@/lib/db/pool";
+import { checkPublicCalls, clientKey, publicToolCalls, rateLimitedResponse } from "@/lib/guard/publicLimit";
 
 // supabase-js et pg ont besoin du runtime Node.js (pas Edge).
 export const runtime = "nodejs";
@@ -23,7 +25,7 @@ const mcpHandler = createMcpHandler(
     registerToolzyTools(server);
     registerAuthenticatedTools(server);
   },
-  { serverInfo: { name: "toolzy", version: "0.1.0" } },
+  { serverInfo: { name: "toolzy", version: "0.2.0" } },
   { basePath: "/api", maxDuration: 60, disableSse: true, verboseLogs: false },
 );
 
@@ -97,6 +99,13 @@ async function handle(request: Request): Promise<Response> {
     }
     if (decision.kind === "insufficient_scope") {
       return challenge(403, { error: "insufficient_scope", scope: decision.scopes.join(" ") });
+    }
+
+    // Outils publics : limite par IP contre l'aspiration du catalogue.
+    const publicCalls = publicToolCalls(body);
+    if (publicCalls.length > 0) {
+      const limit = await checkPublicCalls(getPool, clientKey(request.headers), publicCalls);
+      if (limit.kind !== "allow") return rateLimitedResponse(body, limit);
     }
   }
 
