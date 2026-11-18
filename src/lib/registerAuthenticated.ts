@@ -9,6 +9,14 @@ import { listMyReservations, RESERVATION_PERIODS, RESERVATION_ROLES } from "../t
 import { ConversationNotFoundError, getConversationMessages, listMyConversations } from "../tools/my-messages";
 import { InvalidMessageError, LinksNotAllowedError, MESSAGE_MAX_LENGTH, sendMessage, type MessageTarget } from "../tools/send-message";
 import {
+  InvalidListingUpdateError,
+  listMyListings,
+  MIN_DEPOSIT_EUR,
+  MIN_DISCOUNT_AFTER_DAYS,
+  ProListingPricingError,
+  updateMyListing,
+} from "../tools/my-listings";
+import {
   findConversation,
   ListingNotContactableError,
   ListingNotFoundError,
@@ -32,6 +40,10 @@ function publicError(error: unknown): string {
     return "La connexion à Toolzy a expiré. Déconnectez puis reconnectez Toolzy dans votre assistant.";
   }
   if (error instanceof InvalidMessageError) return error.message;
+  if (error instanceof InvalidListingUpdateError) return error.message;
+  if (error instanceof ProListingPricingError) {
+    return "Le tarif de cette annonce de boutique se modifie dans Toolzy Pro (pro.toolzy.io).";
+  }
   if (error instanceof LinksNotAllowedError) {
     return "Les liens ne sont pas autorisés dans les messages Toolzy. Retirez le lien et réessayez.";
   }
@@ -226,5 +238,66 @@ export function registerAuthenticatedTools(server: McpServer): void {
       }
       return runAsUser("send_message", extra.authInfo, (session) => sendMessage(session, { target, text: args.text }));
     },
+  );
+
+  server.registerTool(
+    "list_my_listings",
+    {
+      title: "Mes annonces",
+      description:
+        "Liste les annonces dont l'utilisateur connecté est propriétaire, avec leur statut (en ligne, en pause, en modération), " +
+        "leur tarif (prix par jour, livraison, accompagnement, remise longue durée), leur caution et leur nombre de vues.",
+      inputSchema: {
+        limit: z.number().int().min(1).max(100).optional().describe("Nombre maximum d'annonces (30 par défaut)"),
+      },
+      annotations: READ_ONLY,
+    },
+    async (args, extra) => runAsUser("list_my_listings", extra.authInfo, (session) => listMyListings(session, args)),
+  );
+
+  const eur = z.number().positive().max(10000);
+  server.registerTool(
+    "update_my_listing",
+    {
+      title: "Modifier le tarif d'une annonce",
+      description:
+        "Modifie le tarif et/ou la caution d'une annonce dont l'utilisateur connecté est propriétaire. Ne passez que les champs à changer. " +
+        `Règles : prix par jour > 0 €, caution ≥ ${MIN_DEPOSIT_EUR} €, remise longue durée à partir de ${MIN_DISCOUNT_AFTER_DAYS} jours et moins chère que le prix par jour. ` +
+        "null désactive la livraison, l'accompagnement ou la remise. Renvoie l'avant/après. " +
+        "AVANT d'appeler cet outil, montrez à l'utilisateur l'annonce et les nouvelles valeurs, et attendez son accord explicite. " +
+        "Le titre, la description et les photos se modifient sur toolzy.io.",
+      inputSchema: {
+        listing_url: z.string().min(1).max(500).describe("URL de l'annonce toolzy.io, ou son slug (list_my_listings)"),
+        price_per_day: eur.optional().describe("Nouveau prix de location par jour, en euros"),
+        deposit: z.number().min(MIN_DEPOSIT_EUR).max(100000).optional().describe("Nouvelle caution, en euros"),
+        delivery_price: eur.nullable().optional().describe("Prix de la livraison en euros, ou null pour ne plus la proposer"),
+        coaching_price: eur.nullable().optional().describe("Prix de l'accompagnement en euros, ou null pour ne plus le proposer"),
+        long_rental_discount: z
+          .object({
+            after_days: z.number().int().min(MIN_DISCOUNT_AFTER_DAYS).max(365).describe("À partir de combien de jours"),
+            price_per_day: eur.describe("Prix par jour remisé, en euros"),
+          })
+          .nullable()
+          .optional()
+          .describe("Remise longue durée, ou null pour la supprimer"),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    async (args, extra) =>
+      runAsUser("update_my_listing", extra.authInfo, (session) =>
+        updateMyListing(session, {
+          listingUrl: args.listing_url,
+          pricePerDay: args.price_per_day,
+          deposit: args.deposit,
+          deliveryPrice: args.delivery_price,
+          coachingPrice: args.coaching_price,
+          longRentalDiscount:
+            args.long_rental_discount === undefined
+              ? undefined
+              : args.long_rental_discount === null
+                ? null
+                : { afterDays: args.long_rental_discount.after_days, dailyPrice: args.long_rental_discount.price_per_day },
+        }),
+      ),
   );
 }

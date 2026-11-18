@@ -9,6 +9,8 @@ export const PROTECTED_TOOLS: Readonly<Record<string, readonly string[]>> = Obje
   get_conversation_messages: ["messages:read"],
   find_conversation: ["messages:read"],
   send_message: ["messages:write"],
+  list_my_listings: ["listings:read"],
+  update_my_listing: ["listings:write"],
 });
 
 export type AccessDecision =

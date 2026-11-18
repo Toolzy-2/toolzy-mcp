@@ -36,7 +36,7 @@ describe("outils connectés", () => {
     for (const name of publicTools.keys()) expect(PROTECTED_TOOLS[name]).toBeUndefined();
   });
 
-  const WRITE_TOOLS = new Set(["send_message"]);
+  const WRITE_TOOLS = new Set(["send_message", "update_my_listing"]);
 
   it("les outils de lecture sont annotés en lecture seule, les outils d'écriture non", () => {
     for (const [name, tool] of tools) expect(tool.annotations?.readOnlyHint, name).toBe(!WRITE_TOOLS.has(name));
