@@ -66,6 +66,20 @@ describe("describeApp", () => {
   });
 });
 
+describe("describeRedirect", () => {
+  it("ne montre jamais une adresse locale : l'application tourne sur cet ordinateur", async () => {
+    const { describeRedirect } = await import("../consentRequest");
+    for (const host of ["localhost", "127.0.0.1", "[::1]", "::1"]) {
+      expect(describeRedirect(host, "Claude Code")).toBe("Vous serez ensuite renvoyé vers Claude Code sur cet ordinateur.");
+    }
+  });
+
+  it("montre le domaine de retour d'une application en ligne (protection contre l'hameçonnage)", async () => {
+    const { describeRedirect } = await import("../consentRequest");
+    expect(describeRedirect("claude.ai", "Claude")).toBe("Vous serez ensuite renvoyé vers claude.ai.");
+  });
+});
+
 describe("SCOPE_LABELS", () => {
   it("décrit chaque scope Toolzy", async () => {
     const { TOOLZY_SCOPES } = await import("../env");

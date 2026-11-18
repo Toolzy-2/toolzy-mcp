@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { verifyOAuthQueryParams } from "@better-auth/oauth-provider";
 import { AuthCard, authStyles as styles } from "@/components/auth/AuthCard";
 import { getAuth } from "@/lib/auth/auth";
-import { describeApp, readConsentRequest, SCOPE_LABELS } from "@/lib/auth/consentRequest";
+import { describeApp, describeRedirect, readConsentRequest, SCOPE_LABELS } from "@/lib/auth/consentRequest";
 import { getAuthEnv } from "@/lib/auth/env";
 import { ConsentForm } from "./ConsentForm";
 
@@ -61,11 +61,13 @@ export default async function ConsentPage({ searchParams }: { searchParams: Sear
     });
   if (!client) return <Invalid />;
 
+  const appName = describeApp(request.clientId, client.client_name);
+
   return (
     <AuthCard>
       <h1 className={styles.title}>Autoriser l&apos;accès</h1>
       <p className={styles.app}>
-        <strong>{describeApp(request.clientId, client.client_name)}</strong> souhaite accéder à votre compte
+        <strong>{appName}</strong> souhaite accéder à votre compte
         Toolzy ({session.user.name}) pour :
       </p>
       <ul className={styles.scopes}>
@@ -73,7 +75,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Sear
           <li key={scope}>{SCOPE_LABELS[scope]}</li>
         ))}
       </ul>
-      <p className={styles.note}>Vous serez ensuite renvoyé vers {request.redirectHost}.</p>
+      <p className={styles.note}>{describeRedirect(request.redirectHost, appName)}</p>
       <ConsentForm />
     </AuthCard>
   );
