@@ -1,9 +1,14 @@
 /**
- * Comptes qu'un agent a le droit de piloter. Les fonctionnalités Admin et
- * Mairie sont hors périmètre du MCP : un jeton d'agent sur un compte
- * d'administration ouvrirait bien plus que les outils exposés.
+ * Comptes qu'un agent a le droit de piloter.
+ *
+ * - Mairie : hors périmètre du MCP, compte refusé.
+ * - Admin : accepté, mais traité comme un utilisateur classique. La RLS donne
+ *   aux admins des droits étendus (lecture de tous les profils, écriture sur
+ *   toutes les annonces...) : chaque requête des outils est donc filtrée
+ *   explicitement sur l'utilisateur connecté, sans jamais s'en remettre à la
+ *   seule RLS. Voir `openUserSession`.
  */
-const EXCLUDED_ROLES = new Set(["admin", "mairie"]);
+const EXCLUDED_ROLES = new Set(["mairie"]);
 
 export interface AccountProfile {
   role: string | null;

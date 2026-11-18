@@ -156,9 +156,11 @@ export async function getConversationMessages(
     .from("conversations")
     .select("id, participants, last_message_at, tools(name, slug)")
     .eq("id", conversationId)
+    .contains("participants", [session.userId])
     .maybeSingle<ConversationRow>();
   if (error) throw new Error(`Lecture de la conversation refusée : ${error.message}`);
-  // La RLS rend invisible une conversation dont on n'est pas participant.
+  // Filtrée sur les participants : une conversation d'autrui est introuvable,
+  // y compris pour un compte Admin.
   if (!conversation) throw new ConversationNotFoundError();
 
   const { data: rows, error: messagesError } = await session.db

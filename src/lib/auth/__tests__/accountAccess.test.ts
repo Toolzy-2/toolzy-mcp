@@ -8,8 +8,12 @@ describe("comptes autorisés à utiliser le MCP", () => {
     expect(accountAccess({ role: null, is_blocked: null })).toEqual({ allowed: true });
   });
 
-  it("refuse les comptes Admin et Mairie, quelle que soit la casse", () => {
-    for (const role of ["Admin", "admin", "Mairie", "MAIRIE"]) {
+  it("accepte un compte Admin, traité comme un utilisateur classique", () => {
+    expect(accountAccess({ role: "Admin", is_blocked: false })).toEqual({ allowed: true });
+  });
+
+  it("refuse les comptes Mairie, quelle que soit la casse", () => {
+    for (const role of ["Mairie", "mairie", "MAIRIE"]) {
       expect(accountAccess({ role, is_blocked: false })).toEqual({ allowed: false, reason: "role" });
     }
   });

@@ -60,7 +60,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
     "whoami",
     {
       title: "Mon compte Toolzy",
-      description: "Renvoie l'identité du compte Toolzy connecté (prénom, rôle, statut Loueur de Confiance).",
+      description: "Renvoie l'identité du compte Toolzy connecté (prénom, type de compte particulier ou professionnel, statut Loueur de Confiance).",
       inputSchema: {},
       annotations: READ_ONLY,
     },

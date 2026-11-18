@@ -11,6 +11,16 @@ export class AccountNotAllowedError extends Error {
   }
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Session d'un outil connecté.
+ *
+ * RÈGLE : chaque requête faite avec `db` doit être filtrée explicitement sur
+ * `userId` (ou sur des lignes déjà filtrées ainsi). La RLS seule ne suffit
+ * pas : elle ouvre aux comptes Admin la lecture et l'écriture des données de
+ * tous les utilisateurs, et le MCP ne doit exposer aucun de ces droits.
+ */
 export interface UserSession {
   readonly userId: string;
   readonly email: string | null;
@@ -22,7 +32,7 @@ export interface UserSession {
 /**
  * Point d'entrée unique de tout outil connecté. Récupère le jeton Supabase
  * détenu par le serveur, relit le profil et applique les exclusions (comptes
- * admin, mairie, bloqués) avant de rendre la main. Aucun outil ne doit lire la
+ * mairie, bloqués) avant de rendre la main. Aucun outil ne doit lire la
  * base sans passer par ici.
  */
 export async function openUserSession(authInfo: AuthInfo): Promise<UserSession> {
@@ -31,6 +41,8 @@ export async function openUserSession(authInfo: AuthInfo): Promise<UserSession> 
 
   const accessToken = await getUpstreamAccessToken(userId);
   const user = await getUpstreamUser(accessToken);
+  // L'identifiant entre dans des filtres PostgREST : on n'accepte qu'un UUID.
+  if (!UUID.test(user.id)) throw new Error("Identifiant utilisateur invalide");
   const db = createSupabaseForToken(accessToken);
   const { data: profile, error } = await db
     .from("users")

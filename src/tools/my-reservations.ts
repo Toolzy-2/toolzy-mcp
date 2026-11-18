@@ -101,9 +101,8 @@ export interface ListMyReservationsArgs {
 }
 
 /**
- * Réservations de l'utilisateur, comme locataire et comme propriétaire. La RLS
- * ne renvoie que celles auxquelles il participe ; le filtre de rôle ne fait
- * que restreindre ce périmètre.
+ * Réservations de l'utilisateur, comme locataire et comme propriétaire. La
+ * requête est toujours filtrée sur l'utilisateur, en plus de la RLS.
  */
 export async function listMyReservations(
   session: UserSession,
@@ -116,8 +115,10 @@ export async function listMyReservations(
     .order("start_date", { ascending: period === "a_venir" })
     .limit(limit);
 
+  // Filtre explicite, même pour « tous » : voir la règle de UserSession.
   if (role === "locataire") query = query.eq("user_id", session.userId);
-  if (role === "proprietaire") query = query.eq("owner_id", session.userId);
+  else if (role === "proprietaire") query = query.eq("owner_id", session.userId);
+  else query = query.or(`user_id.eq.${session.userId},owner_id.eq.${session.userId}`);
   if (bounds.startAfter) query = query.gt("start_date", bounds.startAfter);
   if (bounds.startOnOrBefore) query = query.lte("start_date", bounds.startOnOrBefore);
   if (bounds.endOnOrAfter) query = query.gte("end_date", bounds.endOnOrAfter);
