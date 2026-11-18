@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { Figtree } from "next/font/google";
+
+const figtree = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata = {
   title: "Toolzy MCP Server",
@@ -9,15 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
-      <body
-        style={{
-          margin: 0,
-          fontFamily:
-            "Figtree, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-          background: "#091747",
-          color: "#f6f8fb",
-        }}
-      >
+      <body className={figtree.className} style={{ margin: 0, background: "#f5f5f7", color: "#2b2b3d" }}>
         {children}
       </body>
     </html>
