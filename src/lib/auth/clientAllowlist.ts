@@ -10,10 +10,14 @@ export function parseAllowedHosts(raw: string | undefined): string[] {
     .filter((host) => host.length > 0);
 }
 
+/** Longueur maximale d'un client_id, partagée avec /api/connected-apps et la page toolzy.io. */
+export const MAX_CLIENT_ID_LENGTH = 2048;
+
 export function isAllowedClientMetadataUrl(
   clientIdUrl: string,
   allowedHosts: readonly string[],
 ): boolean {
+  if (clientIdUrl.length > MAX_CLIENT_ID_LENGTH) return false;
   let url: URL;
   try {
     url = new URL(clientIdUrl);

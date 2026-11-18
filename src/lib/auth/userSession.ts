@@ -1,7 +1,31 @@
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { accountAccess } from "./accountAccess";
-import { createSupabaseForToken, getUpstreamAccessToken, getUpstreamUser } from "./upstream";
+import { checkGrant, getGrantsDb, type GrantState } from "./grants";
+import { createSupabaseForToken, getUpstreamAccessToken, getUpstreamUser, UpstreamSessionError } from "./upstream";
+
+/**
+ * L'utilisateur a révoqué l'accès de ce client (ou le client a été désactivé)
+ * alors que son jeton MCP, vérifié localement, n'a pas encore expiré.
+ * Hérite d'UpstreamSessionError : à défaut de traduction dédiée, l'appelant
+ * invite à se reconnecter.
+ */
+export class ConsentRevokedError extends UpstreamSessionError {
+  constructor(readonly reason: Exclude<GrantState, "active">) {
+    super(`Accès révoqué (${reason})`);
+    this.name = "ConsentRevokedError";
+  }
+}
+
+/**
+ * Révocation immédiate : le jeton MCP est un JWT valable 300 s, vérifié sans
+ * aller en base. On relit donc l'autorisation à chaque appel d'outil.
+ */
+async function assertGrantActive(userId: string, clientId: string, issuedAt: unknown): Promise<void> {
+  const iat = typeof issuedAt === "number" && Number.isFinite(issuedAt) ? issuedAt : undefined;
+  const state = await checkGrant(getGrantsDb(), userId, clientId, iat);
+  if (state !== "active") throw new ConsentRevokedError(state);
+}
 
 /** Le compte existe mais n'a pas le droit d'être piloté par un agent. */
 export class AccountNotAllowedError extends Error {
@@ -30,7 +54,8 @@ export interface UserSession {
 }
 
 /**
- * Point d'entrée unique de tout outil connecté. Récupère le jeton Supabase
+ * Point d'entrée unique de tout outil connecté. Vérifie que l'autorisation
+ * (utilisateur, client) est toujours active, récupère le jeton Supabase
  * détenu par le serveur, relit le profil et applique les exclusions (comptes
  * mairie, bloqués) avant de rendre la main. Aucun outil ne doit lire la
  * base sans passer par ici.
@@ -38,6 +63,8 @@ export interface UserSession {
 export async function openUserSession(authInfo: AuthInfo): Promise<UserSession> {
   const userId = authInfo.extra?.userId;
   if (typeof userId !== "string") throw new Error("Identité absente du jeton");
+  if (!authInfo.clientId) throw new Error("Client absent du jeton");
+  await assertGrantActive(userId, authInfo.clientId, authInfo.extra?.issuedAt);
 
   const accessToken = await getUpstreamAccessToken(userId);
   const user = await getUpstreamUser(accessToken);

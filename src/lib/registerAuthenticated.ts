@@ -4,6 +4,7 @@ import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { AccountNotAllowedError, openUserSession, type UserSession } from "./auth/userSession";
 import { UpstreamSessionError } from "./auth/upstream";
+import { auditCall, errorKindOf, guardCall, type AuditStatus } from "./guard";
 import { whoami } from "../tools/whoami";
 import { listMyReservations, RESERVATION_PERIODS, RESERVATION_ROLES } from "../tools/my-reservations";
 import { ConversationNotFoundError, getConversationMessages, listMyConversations } from "../tools/my-messages";
@@ -65,22 +66,43 @@ function publicError(error: unknown): string {
   return "Toolzy est momentanément indisponible. Réessayez dans un instant.";
 }
 
+const auditStatusOf = (error: unknown): AuditStatus => (error instanceof AccountNotAllowedError ? "denied" : "error");
+
 /**
- * Exécute un outil connecté : session utilisateur ouverte (exclusions
- * comprises), résultat en JSON, erreurs converties en message sans détail interne.
+ * Exécute un outil connecté : limite de débit vérifiée AVANT toute ouverture
+ * de session, session utilisateur ouverte (exclusions comprises), résultat en
+ * JSON, erreurs converties en message sans détail interne, puis une ligne
+ * d'audit (jamais de contenu ni d'argument).
  */
 async function runAsUser(
   toolName: string,
   authInfo: AuthInfo | undefined,
   run: (session: UserSession, authInfo: AuthInfo) => Promise<unknown>,
 ): Promise<CallToolResult> {
-  if (!authInfo) return errorResult("Connexion à Toolzy requise.");
+  const userId = authInfo?.extra?.userId;
+  if (!authInfo || typeof userId !== "string") return errorResult("Connexion à Toolzy requise.");
+  const startedAt = Date.now();
+  const audit = (status: AuditStatus, errorKind: string | null = null) =>
+    auditCall({ userId, clientId: authInfo.clientId ?? null, tool: toolName, status, durationMs: Date.now() - startedAt, errorKind });
+
+  const decision = await guardCall(userId, toolName);
+  if (decision.kind === "rate_limited") {
+    await audit("rate_limited");
+    return errorResult(decision.message);
+  }
+  if (decision.kind === "unavailable") {
+    await audit("error", "RateLimitUnavailable");
+    return errorResult(decision.message);
+  }
+
   try {
     const session = await openUserSession(authInfo);
     const result = await run(session, authInfo);
+    await audit("ok");
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
   } catch (error) {
     console.error(`[${toolName}]`, error);
+    await audit(auditStatusOf(error), errorKindOf(error));
     return errorResult(publicError(error));
   }
 }

@@ -3,8 +3,9 @@ import { genericOAuth, jwt } from "better-auth/plugins";
 import { cimd } from "@better-auth/cimd";
 import { fetchClientMetadataResource } from "@better-auth/cimd/node";
 import { mcp } from "@better-auth/mcp";
-import { Pool } from "pg";
+import { getPool } from "../db/pool";
 import { isAllowedClientMetadataUrl, parseAllowedHosts } from "./clientAllowlist";
+import { mapSupabaseProfile } from "./upstreamProfile";
 import { getAuthEnv, TOOLZY_SCOPES, UPSTREAM_PROVIDER_ID, type AuthEnv } from "./env";
 
 /**
@@ -26,15 +27,8 @@ async function fetchSupabaseProfile(env: AuthEnv, accessToken: string | undefine
     console.error(`[auth] userinfo Supabase a répondu ${response.status}`);
     return null;
   }
-  const profile: unknown = await response.json();
-  const { sub, email, email_verified: emailVerified } = (profile ?? {}) as {
-    sub?: unknown;
-    email?: unknown;
-    email_verified?: unknown;
-  };
-  // Le sujet Supabase (UUID de l'utilisateur) est l'identité stable du compte lié.
-  if (typeof sub !== "string" || typeof email !== "string") return null;
-  return { id: sub, email, emailVerified: emailVerified === true, name: email };
+  // Identité = sub Supabase, jamais l'e-mail : voir upstreamProfile.ts.
+  return mapSupabaseProfile(await response.json());
 }
 
 function createAuth() {
@@ -45,9 +39,15 @@ function createAuth() {
   return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    database: new Pool({ connectionString: env.MCP_AUTH_DATABASE_URL }),
+    // Pool partagé avec la limite de débit et le journal d'audit (même MCP_AUTH_DATABASE_URL).
+    database: getPool(),
     disabledPaths: ["/token"],
-    account: { encryptOAuthTokens: true },
+    account: {
+      encryptOAuthTokens: true,
+      // Jamais de rattachement d'un compte Supabase à un utilisateur existant
+      // par e-mail : un utilisateur AS = un sub Supabase (voir upstreamProfile.ts).
+      accountLinking: { enabled: false, disableImplicitLinking: true },
+    },
     plugins: [
       jwt({ disableSettingJwtHeader: true }),
       genericOAuth({

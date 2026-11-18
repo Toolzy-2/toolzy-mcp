@@ -62,7 +62,7 @@ export function createTokenVerifier(options: TokenVerifierOptions) {
       scopes: scopesOf(payload),
       expiresAt: payload.exp,
       resource: new URL(options.audience),
-      extra: { userId: payload.sub },
+      extra: { userId: payload.sub, issuedAt: payload.iat },
     };
   };
 }

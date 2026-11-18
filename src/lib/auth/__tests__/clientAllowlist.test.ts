@@ -35,3 +35,12 @@ describe("liste blanche des clients CIMD", () => {
     expect(isAllowedClientMetadataUrl("https://claude.ai/c.json", [])).toBe(false);
   });
 });
+
+describe("longueur du client_id", () => {
+  it("refuse une URL de métadonnées plus longue que la limite partagée", async () => {
+    const { isAllowedClientMetadataUrl, MAX_CLIENT_ID_LENGTH } = await import("../clientAllowlist");
+    const long = `https://claude.ai/${"a".repeat(MAX_CLIENT_ID_LENGTH)}`;
+    expect(isAllowedClientMetadataUrl(long, ["claude.ai"])).toBe(false);
+    expect(isAllowedClientMetadataUrl("https://claude.ai/oauth/x", ["claude.ai"])).toBe(true);
+  });
+});

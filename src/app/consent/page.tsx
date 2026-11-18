@@ -62,7 +62,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Sear
       <h1 className={styles.title}>Autoriser l&apos;accès</h1>
       <p className={styles.app}>
         <strong>{describeApp(request.clientId, client.client_name)}</strong> souhaite accéder à votre compte
-        Toolzy ({session.user.email}) pour :
+        Toolzy ({session.user.name}) pour :
       </p>
       <ul className={styles.scopes}>
         {request.scopes.map((scope) => (

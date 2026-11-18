@@ -1,3 +1,5 @@
+import { parseDashboardOrigins } from "./dashboardCors";
+
 /**
  * Variables d'environnement du serveur d'autorisation, validées au premier
  * accès. Échec explicite plutôt qu'un démarrage silencieusement mal configuré.
@@ -27,6 +29,15 @@ export function getAuthEnv(): AuthEnv {
     Object.fromEntries(REQUIRED.map((name) => [name, process.env[name] as string])),
   ) as AuthEnv;
   return cached;
+}
+
+/**
+ * Origines autorisées à appeler /api/connected-apps (page « Applications
+ * connectées » de toolzy.io). Variable optionnelle MCP_DASHBOARD_ORIGINS,
+ * liste séparée par des virgules ; défaut : https://www.toolzy.io,https://toolzy.io.
+ */
+export function getDashboardOrigins(): readonly string[] {
+  return parseDashboardOrigins(process.env.MCP_DASHBOARD_ORIGINS);
 }
 
 /** Identifiant du fournisseur amont (Supabase OAuth Server) dans Better Auth. */

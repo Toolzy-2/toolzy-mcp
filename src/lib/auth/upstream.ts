@@ -24,8 +24,13 @@ export async function getUpstreamAccessToken(userId: string): Promise<string> {
   const context = await auth.$context;
 
   const accounts = await context.internalAdapter.findAccounts(userId);
-  const account = accounts.find((candidate) => candidate.providerId === UPSTREAM_PROVIDER_ID);
-  if (!account) throw new UpstreamSessionError("Aucun compte Toolzy lié à cet utilisateur");
+  const linked = accounts.filter((candidate) => candidate.providerId === UPSTREAM_PROVIDER_ID);
+  if (linked.length === 0) throw new UpstreamSessionError("Aucun compte Toolzy lié à cet utilisateur");
+  // Un utilisateur AS correspond à un seul compte Toolzy. Plusieurs liaisons
+  // signaleraient un rattachement anormal : on refuse plutôt que d'agir avec
+  // le jeton d'un autre compte.
+  if (linked.length > 1) throw new UpstreamSessionError("Plusieurs comptes Toolzy liés à cet utilisateur");
+  const [account] = linked;
 
   try {
     const tokens = await auth.api.getAccessToken({ body: { accountId: account.id, userId } });
