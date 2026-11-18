@@ -46,3 +46,32 @@ export const RATE_LIMIT_RULES: Readonly<Record<string, readonly RateLimitRule[]>
  * indisponible), ils sont refusés (fail-closed). Les autres passent (fail-open).
  */
 export const WRITE_TOOLS: ReadonlySet<string> = new Set(["send_message", "update_my_listing"]);
+
+/**
+ * Outils publics (sans connexion), par adresse IP, tous outils publics
+ * confondus. Bornent l'aspiration du catalogue par un même client ; une
+ * conversation normale fait une dizaine d'appels.
+ */
+export const PUBLIC_RULES: readonly RateLimitRule[] = Object.freeze([
+  Object.freeze({ bucket: "public:minute", windowSeconds: MINUTE, max: 30, label: "30 recherches par minute" }),
+  Object.freeze({ bucket: "public:hour", windowSeconds: HOUR, max: 300, label: "300 recherches par heure" }),
+  Object.freeze({ bucket: "public:day", windowSeconds: DAY, max: 1000, label: "1 000 recherches par jour" }),
+]);
+
+/** Limites plus strictes sur la fiche détaillée d'une annonce, en plus des règles publiques. */
+export const PUBLIC_TOOL_RULES: Readonly<Record<string, readonly RateLimitRule[]>> = Object.freeze({
+  get_tool_details: Object.freeze([
+    Object.freeze({
+      bucket: "get_tool_details:hour",
+      windowSeconds: HOUR,
+      max: 100,
+      label: "100 fiches d'annonce par heure",
+    }),
+    Object.freeze({
+      bucket: "get_tool_details:day",
+      windowSeconds: DAY,
+      max: 300,
+      label: "300 fiches d'annonce par jour",
+    }),
+  ]),
+});
