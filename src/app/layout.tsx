@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export const metadata = {
   title: "Toolzy MCP Server",
   description:
-    "Serveur MCP officiel de Toolzy — recherche et location d'outils entre particuliers en France.",
+    "Serveur MCP officiel de Toolzy : recherche et location d'outils entre particuliers, réservations, messages et annonces avec votre compte.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
