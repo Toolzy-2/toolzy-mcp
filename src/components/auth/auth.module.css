@@ -1,0 +1,212 @@
+/* Reprend la carte d'authentification de toolzy.io (popup du header). */
+.page {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f5f5f7;
+  color: #2b2b3d;
+}
+.card {
+  width: 100%;
+  max-width: 448px;
+  box-sizing: border-box;
+  padding: 32px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  align-self: center;
+  margin-bottom: 16px;
+}
+.title {
+  margin: 0 0 24px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: #2b2b3d;
+}
+.titleSmall {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: #2b2b3d;
+}
+.subtitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+.button {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.button svg {
+  position: absolute;
+  left: 16px;
+}
+.button span {
+  flex: 1;
+  text-align: center;
+}
+.google {
+  composes: button;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.google:hover:not(:disabled) {
+  border-color: #9ca3af;
+}
+.primary {
+  composes: button;
+  background: #f26f0a;
+  border: 1px solid #f26f0a;
+  color: #fff;
+  font-weight: 600;
+}
+.primary:hover:not(:disabled) {
+  background: #f78952;
+  border-color: #f78952;
+}
+.secondary {
+  composes: button;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #2b2b3d;
+  font-weight: 500;
+  margin-top: 12px;
+}
+.secondary:hover:not(:disabled) {
+  border-color: #9ca3af;
+}
+.separator {
+  position: relative;
+  margin-bottom: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+}
+.separator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid #d1d5db;
+}
+.separator span {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 16px;
+  color: #2b2b3d;
+}
+.input::placeholder {
+  color: #4b5563;
+}
+.input:focus {
+  outline: 2px solid #f26f0a;
+  outline-offset: -1px;
+  border-color: transparent;
+}
+.error {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 14px;
+  text-align: center;
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+.link {
+  margin-top: 16px;
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: #f26f0a;
+  cursor: pointer;
+}
+.link:hover {
+  color: #54546b;
+}
+.note {
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+.app {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  color: #54546b;
+}
+.app strong {
+  color: #2b2b3d;
+  font-weight: 600;
+}
+.scopes {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  border: 1px solid #ededf1;
+  border-radius: 12px;
+}
+.scopes li {
+  padding: 14px 16px;
+  font-size: 16px;
+  color: #2b2b3d;
+}
+.scopes li + li {
+  border-top: 1px solid #ededf1;
+}
