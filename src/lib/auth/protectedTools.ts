@@ -7,6 +7,7 @@ export const PROTECTED_TOOLS: Readonly<Record<string, readonly string[]>> = Obje
   list_my_reservations: ["reservations:read"],
   list_my_conversations: ["messages:read"],
   get_conversation_messages: ["messages:read"],
+  find_conversation: ["messages:read"],
   send_message: ["messages:write"],
 });
 
