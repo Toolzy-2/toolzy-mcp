@@ -36,8 +36,14 @@ describe("outils connectés", () => {
     for (const name of publicTools.keys()) expect(PROTECTED_TOOLS[name]).toBeUndefined();
   });
 
-  it("les outils de lecture sont annotés en lecture seule", () => {
-    for (const [name, tool] of tools) expect(tool.annotations?.readOnlyHint, name).toBe(true);
+  const WRITE_TOOLS = new Set(["send_message"]);
+
+  it("les outils de lecture sont annotés en lecture seule, les outils d'écriture non", () => {
+    for (const [name, tool] of tools) expect(tool.annotations?.readOnlyHint, name).toBe(!WRITE_TOOLS.has(name));
+  });
+
+  it("les outils d'écriture exigent un scope :write", () => {
+    for (const name of WRITE_TOOLS) expect(PROTECTED_TOOLS[name].some((s) => s.endsWith(":write"))).toBe(true);
   });
 
   it("refuse un appel sans identité sans toucher à la base", async () => {
