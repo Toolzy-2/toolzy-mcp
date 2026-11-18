@@ -7,6 +7,9 @@ import { describeApp, readConsentRequest, SCOPE_LABELS } from "@/lib/auth/consen
 import { getAuthEnv } from "@/lib/auth/env";
 import { ConsentForm } from "./ConsentForm";
 
+// Demande d'autorisation propre à chaque visite : jamais pré-générée au build.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Autoriser une application | Toolzy",
   robots: { index: false, follow: false },
@@ -38,8 +41,9 @@ function Invalid() {
  * dont la signature a été vérifiée ici, côté serveur, et d'une session valide.
  */
 export default async function ConsentPage({ searchParams }: { searchParams: SearchParams }) {
+  const query = toQueryString(await searchParams);
   const { BETTER_AUTH_SECRET } = getAuthEnv();
-  const request = await readConsentRequest(toQueryString(await searchParams), (query) =>
+  const request = await readConsentRequest(query, (query) =>
     verifyOAuthQueryParams(query, BETTER_AUTH_SECRET),
   );
   if (!request.ok) return <Invalid />;
