@@ -88,3 +88,4 @@ export function registerToolzyTools(server: McpServer): void {
     async (args) => checkAvailability(args),
   );
 }
+
