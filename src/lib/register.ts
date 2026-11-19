@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readOnlyTool } from "./toolAnnotations";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { searchTools } from "../tools/search-tools";
 import { getToolDetails } from "../tools/get-tool-details";
@@ -16,6 +17,7 @@ export function registerToolzyTools(server: McpServer): void {
     "search_tools",
     {
       title: "Rechercher des outils",
+      annotations: readOnlyTool("Rechercher des outils"),
       description:
         "Recherche d'outils et équipements disponibles à la location sur Toolzy. Utilisez ce tool quand l'utilisateur cherche un outil, veut louer du matériel, ou demande ce qui est disponible près de chez lui (ex: 'perceuse à Bordeaux', 'tondeuse à gazon', 'outils de bricolage'). " +
         "La recherche couvre la commune demandée PUIS les communes voisines dans un rayon de 15 km : chaque résultat porte `is_local` et `distance_km`, et `search_area` donne la répartition. " +
@@ -59,6 +61,7 @@ export function registerToolzyTools(server: McpServer): void {
     "get_tool_details",
     {
       title: "Détails d'un outil",
+      annotations: readOnlyTool("Détails d'un outil"),
       description:
         "Récupère les informations détaillées d'un outil sur Toolzy : prix, caractéristiques, photos. Utilisez ce tool quand l'utilisateur veut en savoir plus sur un outil spécifique après avoir vu les résultats de recherche. " +
         "Renvoie aussi `similar_tools` : des alternatives de la même catégorie dans un rayon de 20 km avec leur distance — à proposer si l'outil est jugé trop cher ou trop loin.",
@@ -75,6 +78,7 @@ export function registerToolzyTools(server: McpServer): void {
     "check_availability",
     {
       title: "Vérifier la disponibilité",
+      annotations: readOnlyTool("Vérifier la disponibilité"),
       description:
         "Vérifie si un outil est disponible pour des dates données et calcule le prix total. Utilisez ce tool quand l'utilisateur demande la disponibilité, veut savoir le prix pour une période, ou demande 'est-ce disponible ce weekend ?'.",
       inputSchema: {
