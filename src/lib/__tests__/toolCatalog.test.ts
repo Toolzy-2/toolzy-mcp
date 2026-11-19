@@ -31,6 +31,24 @@ describe("catalogue de la page d'accueil", () => {
     }
   });
 
+  it("annote chaque outil comme l'exigent les annuaires : titre, lecture seule ou destructif", () => {
+    const annotations = new Map<string, { title?: string; readOnlyHint?: boolean; destructiveHint?: boolean }>();
+    const capture = (register: (server: McpServer) => void) =>
+      register({
+        registerTool: (name: string, config: { annotations?: object }) =>
+          annotations.set(name, config.annotations ?? {}),
+      } as unknown as McpServer);
+    capture(registerToolzyTools);
+    capture(registerAuthenticatedTools);
+
+    for (const [name, hint] of annotations) {
+      expect(hint.title, name).toBeTruthy();
+      const writes = (PROTECTED_TOOLS[name] ?? []).some((scope) => scope.endsWith(":write"));
+      expect(hint.readOnlyHint, name).toBe(!writes);
+      expect(hint.destructiveHint, name).toBe(writes);
+    }
+  });
+
   it("n'utilise pas de tiret cadratin dans les textes affichés", () => {
     const texts = [...PUBLIC_TOOLS, ...CONNECTED_GROUPS.flatMap((group) => group.tools)].map((tool) => tool.desc);
     for (const text of texts) expect(text).not.toMatch(/[—–]/);

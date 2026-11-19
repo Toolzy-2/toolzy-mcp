@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readOnlyTool, writeTool } from "./toolAnnotations";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
@@ -121,8 +122,6 @@ function targetFrom(args: { conversation_id?: string; listing_url?: string; rese
 const targetErrorText =
   "Indiquez exactement un destinataire : conversation_id, listing_url ou reservation_id.";
 
-const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
-
 /**
  * Outils qui agissent au nom d'un utilisateur connecté. Réservés au transport
  * HTTP : le contrôle du jeton et des scopes est fait dans la route avant
@@ -135,7 +134,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
       title: "Mon compte Toolzy",
       description: "Renvoie l'identité du compte Toolzy connecté (prénom, type de compte particulier ou professionnel, statut Loueur de Confiance).",
       inputSchema: {},
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Mon compte Toolzy"),
     },
     async (_args, extra) => runAsUser("whoami", extra.authInfo, (_session, authInfo) => whoami(authInfo)),
   );
@@ -158,7 +157,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
           .describe("a_venir, en_cours, passees ou toutes (par défaut)"),
         limit: z.number().int().min(1).max(50).optional().describe("Nombre maximum de réservations (20 par défaut)"),
       },
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Mes réservations"),
     },
     async (args, extra) =>
       runAsUser("list_my_reservations", extra.authInfo, (session) => listMyReservations(session, args)),
@@ -175,7 +174,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
         unread_only: z.boolean().optional().describe("Ne garder que les conversations avec des messages non lus"),
         limit: z.number().int().min(1).max(30).optional().describe("Nombre maximum de conversations (10 par défaut)"),
       },
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Mes conversations"),
     },
     async (args, extra) =>
       runAsUser("list_my_conversations", extra.authInfo, (session) =>
@@ -194,7 +193,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
         conversation_id: z.string().uuid().describe("Identifiant de la conversation (list_my_conversations)"),
         limit: z.number().int().min(1).max(100).optional().describe("Nombre maximum de messages (30 par défaut)"),
       },
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Lire une conversation"),
     },
     async (args, extra) =>
       runAsUser("get_conversation_messages", extra.authInfo, (session) =>
@@ -213,7 +212,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
         listing_url: z.string().min(1).max(500).optional().describe("URL de l'annonce toolzy.io, ou son slug"),
         reservation_id: z.string().uuid().optional().describe("Identifiant d'une réservation (list_my_reservations)"),
       },
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Retrouver une conversation"),
     },
     async (args, extra) => {
       let target: ConversationTarget;
@@ -249,7 +248,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
           .max(MESSAGE_MAX_LENGTH)
           .describe("Texte exact validé par l'utilisateur, sans lien"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: writeTool("Envoyer un message", { idempotent: false, reachesOthers: true }),
     },
     async (args, extra) => {
       let target: MessageTarget;
@@ -272,7 +271,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
       inputSchema: {
         limit: z.number().int().min(1).max(100).optional().describe("Nombre maximum d'annonces (30 par défaut)"),
       },
-      annotations: READ_ONLY,
+      annotations: readOnlyTool("Mes annonces"),
     },
     async (args, extra) => runAsUser("list_my_listings", extra.authInfo, (session) => listMyListings(session, args)),
   );
@@ -303,7 +302,7 @@ export function registerAuthenticatedTools(server: McpServer): void {
           .optional()
           .describe("Remise longue durée, ou null pour la supprimer"),
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      annotations: writeTool("Modifier le tarif d'une annonce", { idempotent: true, reachesOthers: false }),
     },
     async (args, extra) =>
       runAsUser("update_my_listing", extra.authInfo, (session) =>
