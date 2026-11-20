@@ -141,7 +141,10 @@ export async function checkAvailability(params: CheckAvailabilityParams) {
     guarantee_note:
       insuranceFee > 0 ? "Garantie Casse & Vol, assurée par notre partenaire assureur." : null,
     deposit: caution > 0 ? caution : 0,
-    deposit_note: caution > 0 ? "Empreinte bancaire, non débitée." : null,
+    deposit_note:
+      caution > 0
+        ? "Aucune somme n'est bloquée sur la carte : Toolzy ne débite la caution qu'en cas de dommage déclaré et validé."
+        : null,
     total,
     currency: "EUR",
     blocked_dates: r.available === true ? undefined : (r.blocked_dates ?? []),
