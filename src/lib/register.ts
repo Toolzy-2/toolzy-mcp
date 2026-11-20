@@ -4,6 +4,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { searchTools } from "../tools/search-tools";
 import { getToolDetails } from "../tools/get-tool-details";
 import { checkAvailability } from "../tools/check-availability";
+import type { DbSource } from "./guard/types";
+import { withPublicCallLog } from "./logging/publicCallLog";
 
 /**
  * Enregistre les 3 tools read-only de Toolzy sur une instance McpServer.
@@ -12,7 +14,13 @@ import { checkAvailability } from "../tools/check-availability";
  *  - HTTP (Streamable HTTP) via src/app/api/[transport]/route.ts (déploiement Vercel)
  *  - stdio via src/server.ts (usage local / npx)
  */
-export function registerToolzyTools(server: McpServer): void {
+export function registerToolzyTools(server: McpServer, options: { readonly logSource?: DbSource } = {}): void {
+  // Journal des appels (table mcp_logs, lue par l'admin) : seulement sur le transport HTTP.
+  const logged = <A extends object, R extends { content?: ReadonlyArray<{ type: string; text?: string }>; isError?: boolean }>(
+    tool: string,
+    handler: (args: A) => Promise<R>,
+  ) => (options.logSource ? withPublicCallLog(tool, options.logSource, handler) : handler);
+
   server.registerTool(
     "search_tools",
     {
@@ -54,7 +62,7 @@ export function registerToolzyTools(server: McpServer): void {
           .describe("Nombre max de résultats (défaut: 10, max: 20)"),
       },
     },
-    async (args) => searchTools(args),
+    logged("search_tools", searchTools),
   );
 
   server.registerTool(
@@ -71,7 +79,7 @@ export function registerToolzyTools(server: McpServer): void {
           .describe("URL de l'annonce Toolzy (ex: https://www.toolzy.io/listings/perceuse-makita)"),
       },
     },
-    async (args) => getToolDetails(args),
+    logged("get_tool_details", getToolDetails),
   );
 
   server.registerTool(
@@ -89,7 +97,7 @@ export function registerToolzyTools(server: McpServer): void {
         end_date: z.string().describe("Date de fin (YYYY-MM-DD)"),
       },
     },
-    async (args) => checkAvailability(args),
+    logged("check_availability", checkAvailability),
   );
 }
 

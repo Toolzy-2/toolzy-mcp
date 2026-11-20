@@ -6,6 +6,7 @@ import { getAuthEnv } from "@/lib/auth/env";
 import { decideAccess } from "@/lib/auth/protectedTools";
 import { createTokenVerifier, InvalidTokenError } from "@/lib/auth/verifyToken";
 import { getPool } from "@/lib/db/pool";
+import { requestMetaOf, runWithRequestMeta } from "@/lib/logging/requestMeta";
 import { checkPublicCalls, clientKey, publicToolCalls, rateLimitedResponse } from "@/lib/guard/publicLimit";
 
 // supabase-js et pg ont besoin du runtime Node.js (pas Edge).
@@ -22,7 +23,7 @@ export const maxDuration = 60;
  */
 const mcpHandler = createMcpHandler(
   (server) => {
-    registerToolzyTools(server);
+    registerToolzyTools(server, { logSource: getPool });
     registerAuthenticatedTools(server);
   },
   { serverInfo: { name: "toolzy", version: "0.2.0" } },
@@ -109,7 +110,7 @@ async function handle(request: Request): Promise<Response> {
     }
   }
 
-  return authedHandler(request);
+  return runWithRequestMeta(requestMetaOf(request.headers), () => authedHandler(request));
 }
 
 export { handle as GET, handle as POST };
